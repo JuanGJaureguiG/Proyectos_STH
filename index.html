@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyectos · UNIMINUTO Sede Tolima-Huila</title>
+<meta name="description" content="Tablero de control de proyectos con financiación externa de UNIMINUTO Sede Tolima-Huila: presupuesto, financiadores, ejecución y portafolio.">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar" aria-label="Filtros">
+    <div class="brand">
+      <div class="tag">UNIMINUTO · Sede Tolima-Huila</div>
+      <h1>Tablero de Proyectos</h1>
+      <div class="sub">Proyectos con financiación externa · Vigencias 2021–2026</div>
+    </div>
+    <div id="filters"></div>
+    <button class="clear-all" id="clearAll" type="button">Limpiar todos los filtros</button>
+    <div class="side-note">
+      <b>Vigencia</b> corresponde al año de contratación registrado en la columna <i>Control</i> de la base.
+      Los valores están en pesos colombianos corrientes.
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+    <div class="main-header">
+      <div>
+        <h2>Proyectos de la Sede Tolima-Huila</h2>
+        <div class="desc">Contratos y convenios gestionados con entidades públicas y privadas: cuánto se ha gestionado, con quién, en qué estado de ejecución se encuentran y cuál es el detalle de cada proyecto.</div>
+      </div>
+      <div class="as-of">Corte de datos: <b id="asOf">—</b></div>
+    </div>
+
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+    <div class="filter-summary" id="filterSummary"></div>
+
+    <!-- ---------- RESUMEN ---------- -->
+    <section class="view" id="view-resumen">
+      <div class="kpi-row" id="kpiResumen"></div>
+      <div class="grid">
+        <div class="panel">
+          <h3>Presupuesto gestionado por vigencia</h3>
+          <div class="panel-sub">Millones de pesos · recursos externos y contrapartida UNIMINUTO</div>
+          <div class="legend"><span><i style="background:#E2962B"></i>Recursos externos</span><span><i style="background:#2F7A6D"></i>Recursos propios (contrapartida)</span></div>
+          <div class="chart-wrap"><canvas id="chVigencia"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Número de proyectos por vigencia</h3>
+          <div class="panel-sub">Proyectos iniciados en cada año de contratación</div>
+          <div class="chart-wrap"><canvas id="chVigN"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Presupuesto por tipo de entidad financiadora</h3>
+          <div class="panel-sub">Millones de pesos y participación sobre el total filtrado</div>
+          <div class="chart-wrap"><canvas id="chTipoEnt"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Presupuesto por categoría e instrumento</h3>
+          <div class="panel-sub">Millones de pesos según la modalidad contractual</div>
+          <div class="chart-wrap"><canvas id="chInst"></canvas></div>
+        </div>
+        <div class="panel full">
+          <h3>Lectura rápida</h3>
+          <div class="panel-sub">Hallazgos calculados automáticamente con los filtros activos</div>
+          <ul class="insights" id="insights"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- FINANCIADORES ---------- -->
+    <section class="view" id="view-financiadores">
+      <div class="callout" id="concCallout"></div>
+      <div class="grid">
+        <div class="panel full">
+          <h3>Presupuesto gestionado por entidad financiadora</h3>
+          <div class="panel-sub">Millones de pesos · ordenado de mayor a menor</div>
+          <div class="chart-wrap tall" id="wrapEnt"><canvas id="chEntidad"></canvas></div>
+        </div>
+        <div class="panel full">
+          <h3>Detalle por entidad financiadora</h3>
+          <div class="panel-sub">Proyectos, presupuesto, participación, ticket promedio y presencia por vigencia (millones de pesos)</div>
+          <div class="table-wrap"><table id="tblEntidad"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- EJECUCIÓN ---------- -->
+    <section class="view" id="view-ejecucion">
+      <div class="kpi-row" id="kpiEjec"></div>
+      <div class="grid">
+        <div class="panel full">
+          <h3>Proyectos con avance inferior al 100%</h3>
+          <div class="panel-sub">Ordenados por fecha de finalización · «Pendiente de cierre» = la fecha final ya se cumplió y el avance reportado no llega al 100%</div>
+          <div class="table-wrap"><table id="tblPend"></table></div>
+        </div>
+        <div class="panel">
+          <h3>Duración promedio de los proyectos</h3>
+          <div class="panel-sub">Meses entre el acta de inicio y la finalización, por vigencia</div>
+          <div class="chart-wrap"><canvas id="chDur"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Proyectos por mes de inicio</h3>
+          <div class="panel-sub">Estacionalidad de la contratación (todas las vigencias filtradas)</div>
+          <div class="chart-wrap"><canvas id="chMes"></canvas></div>
+        </div>
+        <div class="panel full">
+          <h3>Cronograma de proyectos</h3>
+          <div class="panel-sub">Desde el acta de inicio hasta la fecha de finalización · color según estado · la línea punteada marca la fecha de corte</div>
+          <div class="legend" id="ganttLegend"></div>
+          <div class="chart-wrap" id="wrapGantt"><canvas id="chGantt"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- PORTAFOLIO ---------- -->
+    <section class="view" id="view-portafolio">
+      <div class="panel">
+        <div class="tbl-tools">
+          <div>
+            <h3>Portafolio de proyectos</h3>
+            <div class="panel-sub" id="portSub">Haz clic en un proyecto para ver su objetivo</div>
+          </div>
+          <input type="search" id="search" placeholder="Buscar por nombre, entidad u objetivo…" aria-label="Buscar proyecto">
+        </div>
+        <div class="table-wrap"><table id="tblPort"></table></div>
+      </div>
+    </section>
+
+    <!-- ---------- METODOLOGÍA ---------- -->
+    <section class="view" id="view-metodologia">
+      <div class="panel">
+        <div class="prose">
+          <h4>Fuente</h4>
+          <p id="fuenteTxt"></p>
+          <h4>Definiciones</h4>
+          <ul>
+            <li><b>Presupuesto:</b> valor total del proyecto (recursos externos + recursos propios).</li>
+            <li><b>Recursos externos:</b> aporte de la entidad financiadora (Gobernación, alcaldías, SENA, Fuerza Aeroespacial, empresas privadas, etc.).</li>
+            <li><b>Recursos propios (contrapartida):</b> aporte de UNIMINUTO cuando el convenio lo exige.</li>
+            <li><b>Vigencia:</b> año de contratación del proyecto según la columna <i>Control</i> («Proyecto en ejecución AAAA»).</li>
+            <li><b>Tipo de entidad:</b> agrupación de la entidad financiadora en Departamental, Municipal, Nacional y Privada / gremial.</li>
+            <li><b>Instrumento:</b> modalidad contractual identificada a partir del nombre del proyecto (convenio, contrato, contrato de interés público, consultoría, adición u orden de servicio).</li>
+            <li><b>Estado:</b> <i>Ejecutado</i> (avance 100%), <i>En ejecución</i> (avance &lt;100% y fecha final posterior al corte) y <i>Pendiente de cierre</i> (avance &lt;100% con la fecha final ya cumplida).</li>
+          </ul>
+          <h4>Consideraciones</h4>
+          <ul>
+            <li>Los montos se presentan en pesos corrientes, sin ajuste por inflación.</li>
+            <li>Un registro de recursos externos venía como texto («$ 121.903.264,00») y se convirtió a número; el presupuesto se toma como cifra de control.</li>
+            <li>La base no contiene datos personales: solo información contractual agregada de los proyectos.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer class="credit">
+      Tablero de control · Proyectos · UNIMINUTO Sede Tolima-Huila (Rectoría Centro Sur).<br>
+      <span id="footSrc"></span>
+    </footer>
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
